@@ -1,7 +1,7 @@
 const socket = io();
 
 /* =====================================================
-   GLOBAL
+GLOBAL
 ===================================================== */
 
 let roomName = "";
@@ -25,7 +25,7 @@ let iceServers = [];
 const peers = new Map();
 
 /* =====================================================
-   VOICE
+VOICE
 ===================================================== */
 
 let audioContext = null;
@@ -36,7 +36,7 @@ let locallySpeaking = false;
 let silenceSince = null;
 
 /* =====================================================
-   MAP
+MAP
 ===================================================== */
 
 let map = null;
@@ -51,14 +51,14 @@ let destinationMarker = null;
 let routeLine = null;
 
 /* =====================================================
-   RIDE
+RIDE
 ===================================================== */
 
 let ride = null;
 let rideInterval = null;
 
 /* =====================================================
-   MUSIC
+MUSIC
 ===================================================== */
 
 let youtubePlayer = null;
@@ -78,14 +78,22 @@ let youtubeInputDirty = false;
 let manualMusicButton = null;
 let manualMusicStatus = null;
 
+/*
+Katılımcı senkronunun aynı playlist'i tekrar tekrar
+yüklemesini engellemek için kullanıyoruz.
+*/
+let playlistLoadInProgress = false;
+let lastPlaylistLoadAt = 0;
+
 /* =====================================================
-   HELPERS
+HELPERS
 ===================================================== */
 
 const q = selector =>
     document.querySelector(selector);
 
 function waitMs(ms) {
+
     return new Promise(
         resolve =>
             setTimeout(
@@ -96,6 +104,7 @@ function waitMs(ms) {
 }
 
 function getMe() {
+
     return users.find(
         user =>
             user.id === myId
@@ -103,6 +112,7 @@ function getMe() {
 }
 
 function getCurrentMusicGroup() {
+
     return musicGroups.find(
         group =>
             group.id ===
@@ -111,10 +121,13 @@ function getCurrentMusicGroup() {
 }
 
 function canEditCurrentMusicGroup() {
+
     const group =
         getCurrentMusicGroup();
 
-    if (!group) return false;
+    if (!group) {
+        return false;
+    }
 
     return (
         group.ownerId === myId ||
@@ -123,10 +136,13 @@ function canEditCurrentMusicGroup() {
 }
 
 function canBroadcastCurrentMusicGroup() {
+
     const group =
         getCurrentMusicGroup();
 
-    if (!group) return false;
+    if (!group) {
+        return false;
+    }
 
     return (
         group.ownerId === myId &&
@@ -139,26 +155,50 @@ function canBroadcastCurrentMusicGroup() {
 }
 
 /* =====================================================
-   DOM
+DOM
 ===================================================== */
 
-const loginScreen = q("#loginScreen");
-const app = q("#app");
+const loginScreen =
+    q("#loginScreen");
 
-const roomInput = q("#roomInput");
-const usernameInput = q("#usernameInput");
-const joinRoomButton = q("#joinRoomButton");
-const loginStatus = q("#loginStatus");
+const app =
+    q("#app");
 
-const activeRoomName = q("#activeRoomName");
-const connectionStatus = q("#connectionStatus");
-const topSpeaking = q("#topSpeaking");
+const roomInput =
+    q("#roomInput");
 
-const rideTitle = q("#rideTitle");
-const startRide = q("#startRide");
-const rideTimer = q("#rideTimer");
-const rideSearch = q("#rideSearch");
-const rideLogs = q("#rideLogs");
+const usernameInput =
+    q("#usernameInput");
+
+const joinRoomButton =
+    q("#joinRoomButton");
+
+const loginStatus =
+    q("#loginStatus");
+
+const activeRoomName =
+    q("#activeRoomName");
+
+const connectionStatus =
+    q("#connectionStatus");
+
+const topSpeaking =
+    q("#topSpeaking");
+
+const rideTitle =
+    q("#rideTitle");
+
+const startRide =
+    q("#startRide");
+
+const rideTimer =
+    q("#rideTimer");
+
+const rideSearch =
+    q("#rideSearch");
+
+const rideLogs =
+    q("#rideLogs");
 
 const moderatorNavigation =
     q("#moderatorNavigation");
@@ -242,7 +282,7 @@ const participantCount =
     q("#participantCount");
 
 /* =====================================================
-   SETTINGS
+SETTINGS
 ===================================================== */
 
 const savedThreshold =
@@ -260,17 +300,26 @@ const savedDuck =
         "rideroom-duck"
     );
 
-if (savedThreshold !== null) {
+if (
+    savedThreshold !== null
+) {
+
     voiceThreshold.value =
         savedThreshold;
 }
 
-if (savedVolume !== null) {
+if (
+    savedVolume !== null
+) {
+
     musicVolume.value =
         savedVolume;
 }
 
-if (savedDuck !== null) {
+if (
+    savedDuck !== null
+) {
+
     duckVolume.value =
         savedDuck;
 }
@@ -280,7 +329,7 @@ voiceThresholdText.textContent =
     " dBFS";
 
 /* =====================================================
-   MANUAL MUSIC BUTTON
+MANUAL MUSIC BUTTON
 ===================================================== */
 
 function createManualMusicControls() {
@@ -453,7 +502,9 @@ function updateManualMusicButton() {
     manualMusicButton.disabled =
         false;
 
-    if (group.manualPaused) {
+    if (
+        group.manualPaused
+    ) {
 
         manualMusicButton.textContent =
             "▶ MÜZİĞİ DEVAM ETTİR";
@@ -520,7 +571,9 @@ async function handleManualMusicButton() {
 
     } catch {}
 
-    if (!group.manualPaused) {
+    if (
+        !group.manualPaused
+    ) {
 
         applyingRemoteMusicState =
             true;
@@ -554,7 +607,9 @@ async function handleManualMusicButton() {
 
         updateManualMusicButton();
 
-        await waitMs(300);
+        await waitMs(
+            300
+        );
 
         applyingRemoteMusicState =
             false;
@@ -603,7 +658,9 @@ async function handleManualMusicButton() {
 
     } catch {}
 
-    await waitMs(300);
+    await waitMs(
+        300
+    );
 
     applyingRemoteMusicState =
         false;
@@ -613,7 +670,7 @@ async function handleManualMusicButton() {
 }
 
 /* =====================================================
-   YOUTUBE
+YOUTUBE
 ===================================================== */
 
 window.onYouTubeIframeAPIReady =
@@ -647,7 +704,9 @@ function () {
 
                             updateDucking();
 
-                            if (roomName) {
+                            if (
+                                roomName
+                            ) {
 
                                 socket.emit(
                                     "music:getCurrentState"
@@ -659,10 +718,9 @@ function () {
                         event => {
 
                             /*
-                                YouTube kendi kendine bir sonraki
-                                Mix parçasına geçtiğinde owner
-                                yeni videoId + playlistIndex +
-                                position bilgisini server'a yollar.
+                                Remote state uygulanırken
+                                YouTube event'lerini server'a
+                                geri göndermiyoruz.
                             */
 
                             if (
@@ -673,6 +731,12 @@ function () {
                                 return;
                             }
 
+                            /*
+                                Playlist sonraki videoya geçtiğinde
+                                yalnızca OWNER gerçek yeni videoId,
+                                index ve saniyeyi yayınlar.
+                            */
+
                             if (
                                 event.data ===
                                     YT.PlayerState.PLAYING &&
@@ -681,14 +745,6 @@ function () {
 
                                 sendMusicPlaybackState();
                             }
-
-                            /*
-                                ENDED geldiğinde YouTube playlist
-                                varsa kendi sonraki şarkısına geçer.
-
-                                Biz burada ilk videoyu yeniden
-                                yüklemiyoruz.
-                            */
                         },
 
                     onError:
@@ -705,7 +761,7 @@ function () {
 };
 
 /* =====================================================
-   INPUT
+INPUT
 ===================================================== */
 
 youtubeUrl.addEventListener(
@@ -718,7 +774,7 @@ youtubeUrl.addEventListener(
 );
 
 /* =====================================================
-   LOGIN
+LOGIN
 ===================================================== */
 
 joinRoomButton.onclick =
@@ -805,7 +861,9 @@ async () => {
         },
         result => {
 
-            if (!result.ok) {
+            if (
+                !result.ok
+            ) {
 
                 loginStatus.textContent =
                     result.error;
@@ -866,7 +924,9 @@ async () => {
 
             renderUsers();
 
-            renderMusicGroups(true);
+            renderMusicGroups(
+                true
+            );
 
             createManualMusicControls();
 
@@ -890,7 +950,9 @@ async () => {
                 );
             }
 
-            if (result.ride) {
+            if (
+                result.ride
+            ) {
 
                 startRideUI(
                     result.ride
@@ -910,16 +972,20 @@ async () => {
 };
 
 /* =====================================================
-   MODERATOR
+MODERATOR
 ===================================================== */
 
 function setupModeratorUI() {
 
-    if (isModerator) {
+    if (
+        isModerator
+    ) {
 
         moderatorNavigation
             .classList
-            .remove("hidden");
+            .remove(
+                "hidden"
+            );
 
         rideTitle.disabled =
             false;
@@ -933,7 +999,9 @@ function setupModeratorUI() {
 
         moderatorNavigation
             .classList
-            .add("hidden");
+            .add(
+                "hidden"
+            );
 
         rideTitle.disabled =
             true;
@@ -946,7 +1014,7 @@ function setupModeratorUI() {
 }
 
 /* =====================================================
-   WEBRTC
+WEBRTC
 ===================================================== */
 
 async function createPeer(
@@ -1018,7 +1086,9 @@ async function createPeer(
                         peerId
                     );
 
-            if (!audio) {
+            if (
+                !audio
+            ) {
 
                 audio =
                     document
@@ -1049,7 +1119,9 @@ async function createPeer(
                 event.streams[0];
         };
 
-    if (initiator) {
+    if (
+        initiator
+    ) {
 
         const offer =
             await pc
@@ -1095,8 +1167,7 @@ function startWebRTC(list) {
 }
 
 socket.on(
-    "webrtc:offer",
-
+    "webrtc",
     async ({
         from,
         sdp
@@ -1136,8 +1207,7 @@ socket.on(
 );
 
 socket.on(
-    "webrtc:answer",
-
+    "webrtc",
     async ({
         from,
         sdp
@@ -1148,7 +1218,9 @@ socket.on(
                 from
             );
 
-        if (!pc) return;
+        if (!pc) {
+            return;
+        }
 
         await pc
             .setRemoteDescription(
@@ -1158,8 +1230,7 @@ socket.on(
 );
 
 socket.on(
-    "webrtc:ice",
-
+    "webrtc",
     async ({
         from,
         candidate
@@ -1170,7 +1241,9 @@ socket.on(
                 from
             );
 
-        if (!pc) return;
+        if (!pc) {
+            return;
+        }
 
         try {
 
@@ -1190,12 +1263,11 @@ socket.on(
 );
 
 /* =====================================================
-   USERS
+USERS
 ===================================================== */
 
 socket.on(
-    "room:users",
-
+    "room",
     list => {
 
         users =
@@ -1204,7 +1276,9 @@ socket.on(
         const me =
             getMe();
 
-        if (me) {
+        if (
+            me
+        ) {
 
             const newGroupId =
                 me.musicGroupId ||
@@ -1224,7 +1298,9 @@ socket.on(
 
         renderUsers();
 
-        renderMusicGroups(false);
+        renderMusicGroups(
+            false
+        );
 
         updateDucking();
 
@@ -1233,12 +1309,13 @@ socket.on(
 );
 
 socket.on(
-    "room:moderator",
-
+    "room",
     value => {
 
         isModerator =
-            Boolean(value);
+            Boolean(
+                value
+            );
 
         setupModeratorUI();
 
@@ -1249,8 +1326,7 @@ socket.on(
 );
 
 socket.on(
-    "voice:speaking",
-
+    "voice",
     ({
         id,
         speaking
@@ -1262,7 +1338,9 @@ socket.on(
                     item.id === id
             );
 
-        if (user) {
+        if (
+            user
+        ) {
 
             user.speaking =
                 speaking;
@@ -1275,7 +1353,7 @@ socket.on(
 );
 
 /* =====================================================
-   USER UI
+USER UI
 ===================================================== */
 
 function renderUsers() {
@@ -1305,11 +1383,15 @@ function renderUsers() {
                     user =>
                         user.username
                 )
-                .join(" • ");
+                .join(
+                    " • "
+                );
 
         topSpeaking
             .classList
-            .add("active");
+            .add(
+                "active"
+            );
 
     } else {
 
@@ -1318,7 +1400,9 @@ function renderUsers() {
 
         topSpeaking
             .classList
-            .remove("active");
+            .remove(
+                "active"
+            );
     }
 
     users.forEach(
@@ -1418,7 +1502,8 @@ function renderUsers() {
                 <div class="user-top">
                     <strong>
                         ${
-                            user.id === myId
+                            user.id ===
+                            myId
                                 ? "👤 "
                                 : ""
                         }
@@ -1470,7 +1555,7 @@ function renderUsers() {
 }
 
 /* =====================================================
-   VOICE
+VOICE
 ===================================================== */
 
 function startVoiceEngine() {
@@ -1537,7 +1622,8 @@ function analyseVoice() {
             analyserBuffer
         );
 
-    let total = 0;
+    let total =
+        0;
 
     for (
         let i = 0;
@@ -1567,7 +1653,9 @@ function analyseVoice() {
         );
 
     const pretty =
-        db.toFixed(1);
+        db.toFixed(
+            1
+        );
 
     microphoneDb.textContent =
         pretty +
@@ -1666,12 +1754,16 @@ function analyseVoice() {
     }
 }
 
-function setMySpeaking(value) {
+function setMySpeaking(
+    value
+) {
 
     const me =
         getMe();
 
-    if (me) {
+    if (
+        me
+    ) {
 
         me.speaking =
             value;
@@ -1683,7 +1775,7 @@ function setMySpeaking(value) {
 }
 
 /* =====================================================
-   MIC HEALTH
+MIC HEALTH
 ===================================================== */
 
 function setupMicrophoneHealth() {
@@ -1692,13 +1784,21 @@ function setupMicrophoneHealth() {
         localStream
             .getAudioTracks()[0];
 
-    if (!track) return;
+    if (
+        !track
+    ) {
+        return;
+    }
 
     track.addEventListener(
         "mute",
         () => {
 
-            if (muted) return;
+            if (
+                muted
+            ) {
+                return;
+            }
 
             autoUnavailable =
                 true;
@@ -1776,7 +1876,7 @@ function setupMicrophoneHealth() {
 }
 
 /* =====================================================
-   MUTE
+MUTE
 ===================================================== */
 
 muteButton.onclick =
@@ -1795,7 +1895,9 @@ muteButton.onclick =
             }
         );
 
-    if (muted) {
+    if (
+        muted
+    ) {
 
         locallySpeaking =
             false;
@@ -1825,7 +1927,7 @@ muteButton.onclick =
 };
 
 /* =====================================================
-   SETTINGS
+SETTINGS
 ===================================================== */
 
 voiceThreshold.oninput =
@@ -1864,7 +1966,7 @@ duckVolume.oninput =
 };
 
 /* =====================================================
-   DUCKING
+DUCKING
 ===================================================== */
 
 function updateDucking() {
@@ -1903,12 +2005,11 @@ function updateDucking() {
 }
 
 /* =====================================================
-   MUSIC GROUPS
+MUSIC GROUPS
 ===================================================== */
 
 socket.on(
-    "music:groups",
-
+    "music",
     groups => {
 
         musicGroups =
@@ -1917,7 +2018,9 @@ socket.on(
         const me =
             getMe();
 
-        if (me) {
+        if (
+            me
+        ) {
 
             const newGroupId =
                 me.musicGroupId ||
@@ -1946,7 +2049,7 @@ socket.on(
 );
 
 /* =====================================================
-   MUSIC ROOMS UI
+MUSIC ROOMS UI
 ===================================================== */
 
 function renderMusicGroups(
@@ -1986,7 +2089,8 @@ function renderMusicGroups(
                         group.id
                 ).length;
 
-            let stateText = "";
+            let stateText =
+                "";
 
             if (
                 group.manualPaused
@@ -2099,7 +2203,7 @@ function renderMusicGroups(
 }
 
 /* =====================================================
-   CREATE MUSIC ROOM
+CREATE MUSIC ROOM
 ===================================================== */
 
 createMusicRoom.onclick =
@@ -2110,7 +2214,9 @@ createMusicRoom.onclick =
             .value
             .trim();
 
-    if (!name) {
+    if (
+        !name
+    ) {
 
         alert(
             "Odacık adı yaz."
@@ -2140,7 +2246,7 @@ createMusicRoom.onclick =
 };
 
 /* =====================================================
-   SAVE STATE
+SAVE STATE
 ===================================================== */
 
 function saveCurrentMusicState() {
@@ -2156,7 +2262,11 @@ function saveCurrentMusicState() {
     const group =
         getCurrentMusicGroup();
 
-    if (!group) return;
+    if (
+        !group
+    ) {
+        return;
+    }
 
     if (
         group.ownerId !==
@@ -2187,7 +2297,9 @@ function saveCurrentMusicState() {
                 rawPlaylistIndex
             ) &&
             rawPlaylistIndex >= 0
+
                 ? rawPlaylistIndex
+
                 : group.playlistIndex ||
                   0;
 
@@ -2226,7 +2338,9 @@ function saveCurrentMusicState() {
             }
         );
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.warn(
             "State kaydedilemedi:",
@@ -2236,7 +2350,7 @@ function saveCurrentMusicState() {
 }
 
 /* =====================================================
-   ROOM CHANGE
+ROOM CHANGE
 ===================================================== */
 
 function realMusicRoomChanged() {
@@ -2264,6 +2378,12 @@ function realMusicRoomChanged() {
 
     appliedPlaylistIndex =
         -1;
+
+    playlistLoadInProgress =
+        false;
+
+    lastPlaylistLoadAt =
+        0;
 
     if (
         youtubeReady &&
@@ -2297,7 +2417,7 @@ function realMusicRoomChanged() {
 }
 
 /* =====================================================
-   LOAD YOUTUBE
+LOAD YOUTUBE
 ===================================================== */
 
 loadYoutubeButton.onclick =
@@ -2308,7 +2428,9 @@ loadYoutubeButton.onclick =
             .value
             .trim();
 
-    if (!url) {
+    if (
+        !url
+    ) {
 
         alert(
             "YouTube linkini yapıştır."
@@ -2357,6 +2479,26 @@ loadYoutubeButton.onclick =
     applyingRemoteMusicState =
         true;
 
+    /*
+        Yeni kaynak gerçekten değiştiği için
+        eski uygulanmış playlist/video bilgisini sıfırla.
+    */
+
+    appliedGroupId =
+        null;
+
+    appliedVideoId =
+        null;
+
+    appliedListId =
+        null;
+
+    appliedPlaylistIndex =
+        -1;
+
+    playlistLoadInProgress =
+        false;
+
     socket.emit(
         "music:setSource",
         {
@@ -2375,12 +2517,11 @@ loadYoutubeButton.onclick =
 };
 
 /* =====================================================
-   MUSIC STATE
+MUSIC STATE
 ===================================================== */
 
 socket.on(
-    "music:groupState",
-
+    "music",
     group => {
 
         if (
@@ -2417,9 +2558,10 @@ socket.on(
 );
 
 /* =====================================================
-   APPLY MUSIC
+APPLY MUSIC STATE
 
-   MIX / PLAYLIST İÇİN ANA DÜZELTME
+ÖNEMLİ:
+AYNI PLAYLIST HER SENKRONDA YENİDEN YÜKLENMEZ.
 ===================================================== */
 
 async function applyMusicGroupState(
@@ -2447,14 +2589,16 @@ async function applyMusicGroupState(
         return;
     }
 
-    applyingRemoteMusicState =
-        true;
+    /*
+        Eğer başka bir remote uygulama hâlâ devam ediyorsa
+        üzerine ikinci loadPlaylist bindirmiyoruz.
+    */
 
-    musicRoomSwitching =
-        true;
-
-    musicStateReady =
-        false;
+    if (
+        playlistLoadInProgress
+    ) {
+        return;
+    }
 
     const videoId =
         group.currentVideoId ||
@@ -2484,11 +2628,18 @@ async function applyMusicGroupState(
             )
         );
 
+    /*
+        ODADA MÜZİK YOK
+    */
+
     if (
         !group.source &&
         !videoId &&
         !listId
     ) {
+
+        applyingRemoteMusicState =
+            true;
 
         try {
 
@@ -2516,50 +2667,47 @@ async function applyMusicGroupState(
 
     try {
 
-        /* =============================================
-           MIX / PLAYLIST MODE
-        ============================================= */
+        /* =================================================
+        MIX / PLAYLIST
+        ================================================= */
 
-        if (listId) {
+        if (
+            listId
+        ) {
 
-            let playerIndex = -1;
-            let playerVideoId = null;
+            /*
+                KRİTİK DÜZELTME:
 
-            try {
+                Playlist yalnızca:
+                - başka müzik odasına geçildiyse
+                - gerçekten başka playlist geldiyse
+                yüklenir.
 
-                playerIndex =
-                    youtubePlayer
-                        .getPlaylistIndex?.();
+                currentVideoId değişmesi loadPlaylist
+                sebebi DEĞİLDİR.
+            */
 
-            } catch {}
-
-            try {
-
-                playerVideoId =
-                    youtubePlayer
-                        .getVideoData?.()
-                        ?.video_id ||
-                    null;
-
-            } catch {}
-
-            const playlistAlreadyCorrect =
-                appliedGroupId ===
-                    group.id &&
-                appliedListId ===
-                    listId &&
-                Number(playerIndex) ===
-                    playlistIndex &&
-                (
-                    !videoId ||
-                    !playerVideoId ||
-                    playerVideoId ===
-                        videoId
-                );
+            const mustLoadPlaylist =
+                appliedGroupId !==
+                    group.id ||
+                appliedListId !==
+                    listId;
 
             if (
-                !playlistAlreadyCorrect
+                mustLoadPlaylist
             ) {
+
+                playlistLoadInProgress =
+                    true;
+
+                applyingRemoteMusicState =
+                    true;
+
+                musicRoomSwitching =
+                    true;
+
+                musicStateReady =
+                    false;
 
                 const playlistOptions = {
                     listType:
@@ -2574,13 +2722,6 @@ async function applyMusicGroupState(
                     startSeconds:
                         targetPosition
                 };
-
-                /*
-                    KRİTİK:
-
-                    Artık loadVideoById değil,
-                    gerçek loadPlaylist kullanıyoruz.
-                */
 
                 if (
                     group.manualPaused ||
@@ -2600,49 +2741,267 @@ async function applyMusicGroupState(
                         );
                 }
 
+                lastPlaylistLoadAt =
+                    Date.now();
+
                 await waitMs(
-                    650
+                    700
                 );
 
                 try {
 
+                    const current =
+                        Number(
+                            youtubePlayer
+                                .getCurrentTime?.() ||
+                            0
+                        );
+
+                    if (
+                        Math.abs(
+                            current -
+                            targetPosition
+                        ) > 2
+                    ) {
+
+                        youtubePlayer
+                            .seekTo(
+                                targetPosition,
+                                true
+                            );
+                    }
+
+                } catch {}
+
+                if (
+                    group.manualPaused ||
+                    !group.playing
+                ) {
+
+                    try {
+
+                        youtubePlayer
+                            .pauseVideo();
+
+                    } catch {}
+
+                } else {
+
+                    try {
+
+                        youtubePlayer
+                            .playVideo();
+
+                    } catch {}
+                }
+
+                appliedGroupId =
+                    group.id;
+
+                appliedVideoId =
+                    videoId;
+
+                appliedListId =
+                    listId;
+
+                appliedPlaylistIndex =
+                    playlistIndex;
+
+                playlistLoadInProgress =
+                    false;
+
+                await waitMs(
+                    250
+                );
+
+                finishMusicRoomSync();
+
+                return;
+            }
+
+            /*
+                BURAYA GELDİYSE PLAYLIST ZATEN PLAYER'DA.
+
+                Bundan sonra ASLA loadPlaylist çağırmıyoruz.
+            */
+
+            applyingRemoteMusicState =
+                true;
+
+            let localIndex =
+                -1;
+
+            let localPosition =
+                0;
+
+            try {
+
+                const rawIndex =
                     youtubePlayer
-                        .seekTo(
-                            targetPosition,
-                            true
+                        .getPlaylistIndex?.();
+
+                if (
+                    Number.isFinite(
+                        rawIndex
+                    )
+                ) {
+
+                    localIndex =
+                        rawIndex;
+                }
+
+            } catch {}
+
+            try {
+
+                const rawPosition =
+                    youtubePlayer
+                        .getCurrentTime?.();
+
+                if (
+                    Number.isFinite(
+                        rawPosition
+                    )
+                ) {
+
+                    localPosition =
+                        rawPosition;
+                }
+
+            } catch {}
+
+            /*
+                OWNER başka playlist parçasına geçti.
+
+                Katılımcıda bütün iframe'i yeniden açmak yerine
+                yalnızca playlist içindeki ilgili parçaya geç.
+            */
+
+            if (
+                playlistIndex !==
+                    appliedPlaylistIndex
+            ) {
+
+                try {
+
+                    youtubePlayer
+                        .playVideoAt(
+                            playlistIndex
                         );
 
                 } catch {}
 
+                appliedPlaylistIndex =
+                    playlistIndex;
+
                 await waitMs(
                     350
                 );
+
+                try {
+
+                    const afterPosition =
+                        Number(
+                            youtubePlayer
+                                .getCurrentTime?.() ||
+                            0
+                        );
+
+                    if (
+                        Math.abs(
+                            afterPosition -
+                            targetPosition
+                        ) > 2
+                    ) {
+
+                        youtubePlayer
+                            .seekTo(
+                                targetPosition,
+                                true
+                            );
+                    }
+
+                } catch {}
+
+            } else {
+
+                /*
+                    Aynı şarkıdaysak iframe'e dokunmuyoruz.
+                    Yalnızca ciddi zaman farkı varsa seek yapıyoruz.
+
+                    5 saniyelik tolerans özellikle internet
+                    gecikmesindeki küçük farkların görüntüyü
+                    rahatsız etmesini engeller.
+                */
+
+                if (
+                    Math.abs(
+                        localPosition -
+                        targetPosition
+                    ) > 5
+                ) {
+
+                    try {
+
+                        youtubePlayer
+                            .seekTo(
+                                targetPosition,
+                                true
+                            );
+
+                    } catch {}
+                }
             }
 
             /*
-                Server'ın play/pause kararı.
+                Server play/pause kararı.
             */
+
+            let localState =
+                null;
+
+            try {
+
+                localState =
+                    youtubePlayer
+                        .getPlayerState?.();
+
+            } catch {}
 
             if (
                 group.manualPaused ||
                 !group.playing
             ) {
 
-                try {
+                if (
+                    localState ===
+                        YT.PlayerState.PLAYING
+                ) {
 
-                    youtubePlayer
-                        .pauseVideo();
+                    try {
 
-                } catch {}
+                        youtubePlayer
+                            .pauseVideo();
+
+                    } catch {}
+                }
 
             } else {
 
-                try {
+                if (
+                    localState !==
+                        YT.PlayerState.PLAYING &&
+                    localState !==
+                        YT.PlayerState.BUFFERING
+                ) {
 
-                    youtubePlayer
-                        .playVideo();
+                    try {
 
-                } catch {}
+                        youtubePlayer
+                            .playVideo();
+
+                    } catch {}
+                }
             }
 
             appliedGroupId =
@@ -2658,7 +3017,7 @@ async function applyMusicGroupState(
                 playlistIndex;
 
             await waitMs(
-                300
+                100
             );
 
             finishMusicRoomSync();
@@ -2666,9 +3025,9 @@ async function applyMusicGroupState(
             return;
         }
 
-        /* =============================================
-           NORMAL TEK VIDEO
-        ============================================= */
+        /* =================================================
+        TEK VIDEO
+        ================================================= */
 
         const changedGroup =
             appliedGroupId !==
@@ -2678,12 +3037,23 @@ async function applyMusicGroupState(
             appliedVideoId !==
             videoId;
 
+        applyingRemoteMusicState =
+            true;
+
         if (
             changedGroup ||
             changedVideo
         ) {
 
-            if (videoId) {
+            musicRoomSwitching =
+                true;
+
+            musicStateReady =
+                false;
+
+            if (
+                videoId
+            ) {
 
                 if (
                     group.manualPaused ||
@@ -2709,22 +3079,33 @@ async function applyMusicGroupState(
             }
 
             await waitMs(
-                450
+                500
             );
 
             try {
 
-                youtubePlayer
-                    .seekTo(
-                        targetPosition,
-                        true
+                const current =
+                    Number(
+                        youtubePlayer
+                            .getCurrentTime?.() ||
+                        0
                     );
 
-            } catch {}
+                if (
+                    Math.abs(
+                        current -
+                        targetPosition
+                    ) > 2
+                ) {
 
-            await waitMs(
-                300
-            );
+                    youtubePlayer
+                        .seekTo(
+                            targetPosition,
+                            true
+                        );
+                }
+
+            } catch {}
 
         } else {
 
@@ -2735,11 +3116,16 @@ async function applyMusicGroupState(
                     0
                 );
 
+            /*
+                Tek videoda da küçük internet farklarına
+                dokunmuyoruz.
+            */
+
             if (
                 Math.abs(
                     localPosition -
                     targetPosition
-                ) > 3
+                ) > 5
             ) {
 
                 youtubePlayer
@@ -2750,18 +3136,43 @@ async function applyMusicGroupState(
             }
         }
 
+        let localState =
+            null;
+
+        try {
+
+            localState =
+                youtubePlayer
+                    .getPlayerState?.();
+
+        } catch {}
+
         if (
             group.manualPaused ||
             !group.playing
         ) {
 
-            youtubePlayer
-                .pauseVideo();
+            if (
+                localState ===
+                    YT.PlayerState.PLAYING
+            ) {
+
+                youtubePlayer
+                    .pauseVideo();
+            }
 
         } else {
 
-            youtubePlayer
-                .playVideo();
+            if (
+                localState !==
+                    YT.PlayerState.PLAYING &&
+                localState !==
+                    YT.PlayerState.BUFFERING
+            ) {
+
+                youtubePlayer
+                    .playVideo();
+            }
         }
 
         appliedGroupId =
@@ -2777,12 +3188,17 @@ async function applyMusicGroupState(
             0;
 
         await waitMs(
-            300
+            100
         );
 
         finishMusicRoomSync();
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
+
+        playlistLoadInProgress =
+            false;
 
         console.warn(
             "YouTube sync:",
@@ -2794,7 +3210,7 @@ async function applyMusicGroupState(
 }
 
 /* =====================================================
-   FINISH SYNC
+FINISH SYNC
 ===================================================== */
 
 function finishMusicRoomSync() {
@@ -2814,7 +3230,7 @@ function finishMusicRoomSync() {
 }
 
 /* =====================================================
-   OWNER MUSIC HEARTBEAT
+OWNER MUSIC HEARTBEAT
 ===================================================== */
 
 function sendMusicPlaybackState() {
@@ -2851,7 +3267,9 @@ function sendMusicPlaybackState() {
             group.currentVideoId ||
             null;
 
-        if (!currentVideoId) {
+        if (
+            !currentVideoId
+        ) {
             return;
         }
 
@@ -2890,14 +3308,6 @@ function sendMusicPlaybackState() {
             return;
         }
 
-        /*
-            Mix bir sonraki parçaya geçtiyse
-            rawPosition 0 olabilir.
-
-            Server yeni videoId/index gördüğü için
-            bunu artık kabul edecek.
-        */
-
         socket.emit(
             "music:syncState",
             {
@@ -2921,6 +3331,10 @@ function sendMusicPlaybackState() {
     } catch {}
 }
 
+/*
+Sadece odacık sahibi server'a canlı saniye yollar.
+*/
+
 setInterval(
     () => {
 
@@ -2935,6 +3349,13 @@ setInterval(
     },
     1000
 );
+
+/*
+Owner olmayan kullanıcı state'i sorar.
+
+Bu artık videoyu yeniden yüklemez.
+Sadece saniye/index/play-pause düzeltmesi yapar.
+*/
 
 setInterval(
     () => {
@@ -2956,22 +3377,28 @@ setInterval(
 );
 
 /* =====================================================
-   YOUTUBE URL
+YOUTUBE URL
 ===================================================== */
 
-function parseYoutubeUrl(input) {
+function parseYoutubeUrl(
+    input
+) {
 
     try {
 
         const url =
-            new URL(input);
+            new URL(
+                input
+            );
 
         let videoId =
             null;
 
         const listId =
             url.searchParams
-                .get("list");
+                .get(
+                    "list"
+                );
 
         if (
             url.hostname
@@ -2991,7 +3418,9 @@ function parseYoutubeUrl(input) {
 
             videoId =
                 url.searchParams
-                    .get("v");
+                    .get(
+                        "v"
+                    );
 
             if (
                 !videoId &&
@@ -3003,7 +3432,9 @@ function parseYoutubeUrl(input) {
 
                 videoId =
                     url.pathname
-                        .split("/")[2];
+                        .split(
+                            "/"
+                        )[2];
             }
         }
 
@@ -3022,15 +3453,18 @@ function parseYoutubeUrl(input) {
 }
 
 /* =====================================================
-   BACKGROUND
+BACKGROUND
 ===================================================== */
 
 document.addEventListener(
     "visibilitychange",
-
     async () => {
 
-        if (!roomName) return;
+        if (
+            !roomName
+        ) {
+            return;
+        }
 
         socket.emit(
             "user:background",
@@ -3097,7 +3531,6 @@ document.addEventListener(
 
 window.addEventListener(
     "pagehide",
-
     () => {
 
         saveCurrentMusicState();
@@ -3105,17 +3538,22 @@ window.addEventListener(
 );
 
 /* =====================================================
-   MAP
+MAP
 ===================================================== */
 
 function initializeMap() {
 
     map =
-        L.map("map")
-            .setView(
-                [39, 35],
-                6
-            );
+        L.map(
+            "map"
+        )
+        .setView(
+            [
+                39,
+                35
+            ],
+            6
+        );
 
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -3126,7 +3564,10 @@ function initializeMap() {
             attribution:
                 "© OpenStreetMap"
         }
-    ).addTo(map);
+    )
+    .addTo(
+        map
+    );
 
     setTimeout(
         () => {
@@ -3139,7 +3580,7 @@ function initializeMap() {
 }
 
 /* =====================================================
-   GPS
+GPS
 ===================================================== */
 
 function startModeratorGPS() {
@@ -3169,13 +3610,17 @@ function startModeratorGPS() {
                     currentLongitude
                 ];
 
-                if (!myMarker) {
+                if (
+                    !myMarker
+                ) {
 
                     myMarker =
                         L.marker(
                             coordinates
                         )
-                        .addTo(map)
+                        .addTo(
+                            map
+                        )
                         .bindPopup(
                             "🏍️ Moderatör"
                         );
@@ -3216,7 +3661,7 @@ function startModeratorGPS() {
 }
 
 /* =====================================================
-   NAVIGATION SEARCH
+NAVIGATION SEARCH
 ===================================================== */
 
 findDestinationButton.onclick =
@@ -3236,14 +3681,22 @@ event => {
 
 async function searchDestination() {
 
-    if (!isModerator) return;
+    if (
+        !isModerator
+    ) {
+        return;
+    }
 
     const text =
         destinationInput
             .value
             .trim();
 
-    if (!text) return;
+    if (
+        !text
+    ) {
+        return;
+    }
 
     findDestinationButton.disabled =
         true;
@@ -3262,20 +3715,26 @@ async function searchDestination() {
             );
 
         const results =
-            await fetch(url)
-                .then(
-                    response =>
-                        response.json()
-                );
+            await fetch(
+                url
+            )
+            .then(
+                response =>
+                    response.json()
+            );
 
         destinationResults.innerHTML =
             "";
 
         destinationResults
             .classList
-            .add("visible");
+            .add(
+                "visible"
+            );
 
-        if (!results.length) {
+        if (
+            !results.length
+        ) {
 
             destinationResults.innerHTML =
                 `
@@ -3317,7 +3776,9 @@ async function searchDestination() {
             }
         );
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             error
@@ -3336,7 +3797,9 @@ async function chooseDestination(
 
     destinationResults
         .classList
-        .remove("visible");
+        .remove(
+            "visible"
+        );
 
     const destination = {
 
@@ -3344,26 +3807,35 @@ async function chooseDestination(
             result.display_name,
 
         latitude:
-            Number(result.lat),
+            Number(
+                result.lat
+            ),
 
         longitude:
-            Number(result.lon)
+            Number(
+                result.lon
+            )
     };
 
     let navigation = {
 
         destination,
 
-        route: null,
+        route:
+            null,
 
-        distance: null,
+        distance:
+            null,
 
-        duration: null
+        duration:
+            null
     };
 
     if (
-        currentLatitude !== null &&
-        currentLongitude !== null
+        currentLatitude !==
+            null &&
+        currentLongitude !==
+            null
     ) {
 
         navigation =
@@ -3379,7 +3851,7 @@ async function chooseDestination(
 }
 
 /* =====================================================
-   ROUTE
+ROUTE
 ===================================================== */
 
 async function calculateRoute(
@@ -3404,16 +3876,20 @@ async function calculateRoute(
             "&geometries=geojson";
 
         const data =
-            await fetch(url)
-                .then(
-                    response =>
-                        response.json()
-                );
+            await fetch(
+                url
+            )
+            .then(
+                response =>
+                    response.json()
+            );
 
         const route =
             data.routes?.[0];
 
-        if (!route) {
+        if (
+            !route
+        ) {
 
             throw new Error(
                 "Rota bulunamadı."
@@ -3434,7 +3910,9 @@ async function calculateRoute(
                 route.duration
         };
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.warn(
             "Rota:",
@@ -3445,21 +3923,24 @@ async function calculateRoute(
 
             destination,
 
-            route: null,
+            route:
+                null,
 
-            distance: null,
+            distance:
+                null,
 
-            duration: null
+            duration:
+                null
         };
     }
 }
 
 /* =====================================================
-   NAVIGATION UPDATE
+NAVIGATION UPDATE
 ===================================================== */
 
 socket.on(
-    "navigation:update",
+    "navigation",
     applyNavigation
 );
 
@@ -3483,7 +3964,9 @@ function applyNavigation(
     startNavigationButton.disabled =
         false;
 
-    if (destinationMarker) {
+    if (
+        destinationMarker
+    ) {
 
         map.removeLayer(
             destinationMarker
@@ -3500,19 +3983,24 @@ function applyNavigation(
                     .longitude
             ]
         )
-        .addTo(map)
+        .addTo(
+            map
+        )
         .bindPopup(
             "🏁 " +
             selectedDestination.name
         );
 
-    if (routeLine) {
+    if (
+        routeLine
+    ) {
 
         map.removeLayer(
             routeLine
         );
 
-        routeLine = null;
+        routeLine =
+            null;
     }
 
     if (
@@ -3533,18 +4021,26 @@ function applyNavigation(
             L.polyline(
                 coordinates,
                 {
-                    weight: 6,
-                    opacity: 0.85
+                    weight:
+                        6,
+
+                    opacity:
+                        0.85
                 }
             )
-            .addTo(map);
+            .addTo(
+                map
+            );
 
         map.fitBounds(
             routeLine
                 .getBounds(),
             {
                 padding:
-                    [20, 20]
+                    [
+                        20,
+                        20
+                    ]
             }
         );
 
@@ -3568,7 +4064,9 @@ function applyNavigation(
             ? (
                 navigation.distance /
                 1000
-            ).toFixed(1) +
+            ).toFixed(
+                1
+            ) +
             " km"
 
             : "--";
@@ -3587,7 +4085,7 @@ function applyNavigation(
 }
 
 /* =====================================================
-   GOOGLE MAPS
+GOOGLE MAPS
 ===================================================== */
 
 startNavigationButton.onclick =
@@ -3623,7 +4121,8 @@ centerLocationButton.onclick =
 () => {
 
     if (
-        currentLatitude === null
+        currentLatitude ===
+        null
     ) {
         return;
     }
@@ -3638,22 +4137,30 @@ centerLocationButton.onclick =
 };
 
 /* =====================================================
-   RIDE
+RIDE
 ===================================================== */
 
 startRide.onclick =
 () => {
 
-    if (!isModerator) return;
+    if (
+        !isModerator
+    ) {
+        return;
+    }
 
-    if (!ride) {
+    if (
+        !ride
+    ) {
 
         const title =
             rideTitle
                 .value
                 .trim();
 
-        if (!title) {
+        if (
+            !title
+        ) {
 
             alert(
                 "Sürüş başlığı yaz."
@@ -3683,11 +4190,13 @@ startRide.onclick =
 };
 
 socket.on(
-    "ride:started",
+    "ride",
     startRideUI
 );
 
-function startRideUI(data) {
+function startRideUI(
+    data
+) {
 
     ride =
         data;
@@ -3730,10 +4239,11 @@ function startRideUI(data) {
 }
 
 socket.on(
-    "ride:ended",
+    "ride",
     () => {
 
-        ride = null;
+        ride =
+            null;
 
         clearInterval(
             rideInterval
@@ -3753,10 +4263,12 @@ socket.on(
 );
 
 socket.on(
-    "ride:logs",
+    "ride",
     logs => {
 
-        if (!logs.length) {
+        if (
+            !logs.length
+        ) {
 
             rideLogs.innerHTML =
                 "Henüz kayıt yok";
@@ -3845,7 +4357,7 @@ rideSearch.oninput =
 };
 
 /* =====================================================
-   CONNECTION
+CONNECTION
 ===================================================== */
 
 socket.on(
@@ -3864,7 +4376,11 @@ socket.on(
     "connect",
     () => {
 
-        if (!roomName) return;
+        if (
+            !roomName
+        ) {
+            return;
+        }
 
         connectionStatus.textContent =
             "● Bağlı";
@@ -3892,25 +4408,31 @@ socket.on(
 );
 
 /* =====================================================
-   FORMAT
+FORMAT
 ===================================================== */
 
-function formatClock(seconds) {
+function formatClock(
+    seconds
+) {
 
     const h =
         Math.floor(
-            seconds / 3600
+            seconds /
+            3600
         );
 
     const m =
         Math.floor(
             (
-                seconds % 3600
-            ) / 60
+                seconds %
+                3600
+            ) /
+            60
         );
 
     const s =
-        seconds % 60;
+        seconds %
+        60;
 
     return [
         h,
@@ -3919,13 +4441,17 @@ function formatClock(seconds) {
     ]
     .map(
         value =>
-            String(value)
-                .padStart(
-                    2,
-                    "0"
-                )
+            String(
+                value
+            )
+            .padStart(
+                2,
+                "0"
+            )
     )
-    .join(":");
+    .join(
+        ":"
+    );
 }
 
 function formatRideDuration(
@@ -3934,17 +4460,22 @@ function formatRideDuration(
 
     const h =
         Math.floor(
-            seconds / 3600
+            seconds /
+            3600
         );
 
     const m =
         Math.floor(
             (
-                seconds % 3600
-            ) / 60
+                seconds %
+                3600
+            ) /
+            60
         );
 
-    if (h) {
+    if (
+        h
+    ) {
 
         return (
             h +
@@ -3954,7 +4485,9 @@ function formatRideDuration(
         );
     }
 
-    if (m) {
+    if (
+        m
+    ) {
 
         return (
             m +
@@ -3974,11 +4507,13 @@ function formatRouteTime(
 
     const minutes =
         Math.round(
-            seconds / 60
+            seconds /
+            60
         );
 
     if (
-        minutes < 60
+        minutes <
+        60
     ) {
 
         return (
@@ -3989,17 +4524,21 @@ function formatRouteTime(
 
     return (
         Math.floor(
-            minutes / 60
+            minutes /
+            60
         ) +
         " sa " +
         (
-            minutes % 60
+            minutes %
+            60
         ) +
         " dk"
     );
 }
 
-function escapeHtml(text) {
+function escapeHtml(
+    text
+) {
 
     const div =
         document.createElement(
@@ -4008,7 +4547,8 @@ function escapeHtml(text) {
 
     div.textContent =
         String(
-            text ?? ""
+            text ??
+            ""
         );
 
     return div.innerHTML;
