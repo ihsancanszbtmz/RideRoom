@@ -1167,7 +1167,7 @@ function startWebRTC(list) {
 }
 
 socket.on(
-    "webrtc",
+    "webrtc:offer",
     async ({
         from,
         sdp
@@ -1207,7 +1207,7 @@ socket.on(
 );
 
 socket.on(
-    "webrtc",
+    "webrtc:answer",
     async ({
         from,
         sdp
@@ -1230,7 +1230,7 @@ socket.on(
 );
 
 socket.on(
-    "webrtc",
+    "webrtc:ice",
     async ({
         from,
         candidate
@@ -1267,7 +1267,7 @@ USERS
 ===================================================== */
 
 socket.on(
-    "room",
+    "room:users",
     list => {
 
         users =
@@ -1309,7 +1309,7 @@ socket.on(
 );
 
 socket.on(
-    "room",
+    "room:moderator",
     value => {
 
         isModerator =
@@ -1326,7 +1326,7 @@ socket.on(
 );
 
 socket.on(
-    "voice",
+    "voice:speaking",
     ({
         id,
         speaking
@@ -2009,7 +2009,7 @@ MUSIC GROUPS
 ===================================================== */
 
 socket.on(
-    "music",
+    "music:groups",
     groups => {
 
         musicGroups =
@@ -2521,7 +2521,7 @@ MUSIC STATE
 ===================================================== */
 
 socket.on(
-    "music",
+    "music:groupState",
     group => {
 
         if (
@@ -3940,7 +3940,7 @@ NAVIGATION UPDATE
 ===================================================== */
 
 socket.on(
-    "navigation",
+    "navigation:update",
     applyNavigation
 );
 
@@ -4190,7 +4190,7 @@ startRide.onclick =
 };
 
 socket.on(
-    "ride",
+    "ride:started",
     startRideUI
 );
 
@@ -4239,7 +4239,7 @@ function startRideUI(
 }
 
 socket.on(
-    "ride",
+    "ride:ended",
     () => {
 
         ride =
@@ -4263,7 +4263,7 @@ socket.on(
 );
 
 socket.on(
-    "ride",
+    "ride:logs",
     logs => {
 
         if (
