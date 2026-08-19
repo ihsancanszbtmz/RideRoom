@@ -1,0 +1,677 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    background: #0d1117;
+    color: #f0f6fc;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+.hidden {
+    display: none !important;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    border: 0;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: 700;
+}
+
+input[type="text"] {
+    padding: 10px;
+
+    color: white;
+    background: #0d1117;
+
+    border: 1px solid #30363d;
+    border-radius: 8px;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+
+/* LOGIN */
+
+.login-screen {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #172131,
+            #0d1117 60%
+        );
+}
+
+.login-card {
+    width: 420px;
+    max-width: 92%;
+
+    padding: 34px;
+
+    background: #161b22;
+
+    border: 1px solid #30363d;
+    border-radius: 20px;
+}
+
+.login-logo {
+    text-align: center;
+    font-size: 55px;
+}
+
+.login-card h1,
+.login-card p {
+    text-align: center;
+}
+
+.login-card label {
+    display: block;
+    margin-top: 12px;
+}
+
+.login-card input {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.join-button {
+    width: 100%;
+
+    margin-top: 20px;
+    padding: 14px;
+
+    color: white;
+    background: #238636;
+}
+
+
+/* TOP */
+
+.topbar {
+    min-height: 88px;
+
+    padding: 12px 20px;
+
+    display: grid;
+
+    grid-template-columns:
+        auto 1fr auto;
+
+    align-items: center;
+
+    gap: 18px;
+
+    background: #161b22;
+
+    border-bottom:
+        1px solid #30363d;
+}
+
+.brand h1 {
+    margin: 0;
+}
+
+.room-line {
+    margin-top: 4px;
+
+    display: flex;
+
+    gap: 10px;
+
+    color: #8b949e;
+}
+
+.connection-status {
+    color: #3fb950;
+}
+
+.top-speaking {
+    justify-self: center;
+
+    min-width: 260px;
+
+    padding: 12px 18px;
+
+    text-align: center;
+
+    color: #8b949e;
+    background: #0d1117;
+
+    border:
+        2px solid #30363d;
+
+    border-radius: 12px;
+
+    font-weight: 800;
+}
+
+.top-speaking.active {
+    color: #d8ffe0;
+
+    border-color: #3fb950;
+
+    background:
+        rgba(46,160,67,.15);
+
+    box-shadow:
+        0 0 25px
+        rgba(63,185,80,.45);
+}
+
+.ride-box {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.ride-box button {
+    padding: 11px;
+}
+
+
+/* GRID */
+
+.dashboard {
+    padding: 10px;
+
+    display: grid;
+
+    grid-template-columns:
+        1.05fr 1fr .85fr;
+
+    gap: 10px;
+}
+
+.panel {
+    min-width: 0;
+    min-height: 670px;
+
+    padding: 14px;
+
+    background: #161b22;
+
+    border:
+        1px solid #30363d;
+
+    border-radius: 14px;
+}
+
+.panel-header {
+    margin-bottom: 12px;
+}
+
+.panel-header h2 {
+    margin: 0 0 4px;
+}
+
+.panel-header small {
+    color: #8b949e;
+}
+
+
+/* NAV */
+
+.navigation-search {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 7px;
+}
+
+.navigation-search button {
+    padding: 10px;
+}
+
+.destination-results {
+    display: none;
+
+    max-height: 200px;
+    overflow-y: auto;
+
+    margin-top: 7px;
+
+    background: #0d1117;
+
+    border:
+        1px solid #30363d;
+
+    border-radius: 8px;
+}
+
+.destination-results.visible {
+    display: block;
+}
+
+.destination-result {
+    width: 100%;
+
+    padding: 10px;
+
+    color: white;
+    background: transparent;
+
+    text-align: left;
+
+    border-radius: 0;
+    border-bottom:
+        1px solid #21262d;
+}
+
+.route-info {
+    margin: 8px 0;
+
+    padding: 10px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+.route-row {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.route-stats {
+    margin-top: 9px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 7px;
+}
+
+.route-stats div {
+    padding: 8px;
+
+    text-align: center;
+
+    background: #161b22;
+
+    border-radius: 7px;
+}
+
+#map {
+    width: 100%;
+    height: 400px;
+
+    border-radius: 9px;
+}
+
+.navigation-buttons {
+    margin-top: 8px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1.5fr;
+
+    gap: 7px;
+}
+
+.navigation-buttons button {
+    padding: 11px;
+}
+
+.secondary-button {
+    color: white;
+    background: #30363d;
+}
+
+.green-button {
+    color: white;
+    background: #238636;
+}
+
+.status-text {
+    margin-top: 7px;
+
+    text-align: center;
+
+    color: #8b949e;
+}
+
+
+/* MUSIC ROOMS */
+
+.music-room-create {
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 7px;
+
+    margin-bottom: 8px;
+}
+
+.music-room-create button {
+    padding: 10px;
+}
+
+.music-rooms {
+    max-height: 150px;
+    overflow-y: auto;
+
+    margin-bottom: 10px;
+}
+
+.music-room {
+    margin-bottom: 6px;
+
+    padding: 9px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 8px;
+
+    background: #0d1117;
+
+    border:
+        1px solid #30363d;
+
+    border-radius: 8px;
+}
+
+.music-room.current {
+    border-color: #58a6ff;
+}
+
+.music-room button {
+    padding: 7px;
+}
+
+.current-music-room {
+    margin-bottom: 10px;
+
+    padding: 9px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+.youtube-box {
+    padding: 10px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+.youtube-input {
+    margin-top: 6px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr auto;
+
+    gap: 7px;
+}
+
+.youtube-input button {
+    padding: 10px;
+}
+
+#youtubePlayer {
+    width: 100%;
+    min-height: 245px;
+
+    margin: 10px 0;
+
+    overflow: hidden;
+
+    background: black;
+
+    border-radius: 8px;
+}
+
+#youtubePlayer iframe {
+    width: 100%;
+    min-height: 245px;
+}
+
+.slider-box {
+    padding: 11px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+.slider-box label {
+    display: block;
+
+    margin-top: 9px;
+    margin-bottom: 3px;
+}
+
+.threshold-row {
+    margin-top: 7px;
+
+    display: flex;
+    justify-content: space-between;
+
+    color: #8b949e;
+}
+
+
+/* INTERCOM */
+
+.microphone-button {
+    width: 100%;
+
+    padding: 13px;
+
+    color: #0d1117;
+}
+
+.microphone-button.muted {
+    color: white;
+    background: #da3633;
+}
+
+.microphone-meter {
+    height: 9px;
+
+    margin-top: 10px;
+
+    overflow: hidden;
+
+    background: #30363d;
+
+    border-radius: 10px;
+}
+
+.microphone-level-bar {
+    width: 0%;
+    height: 100%;
+
+    background: #3fb950;
+}
+
+.db-display {
+    margin: 7px 0 13px;
+
+    text-align: right;
+
+    color: #8b949e;
+}
+
+.user {
+    margin-bottom: 8px;
+
+    padding: 11px;
+
+    background: #0d1117;
+
+    border:
+        2px solid #30363d;
+
+    border-radius: 10px;
+}
+
+.user.speaking {
+    border-color: #3fb950;
+
+    box-shadow:
+        0 0 20px
+        rgba(63,185,80,.5);
+}
+
+.user.muted-user {
+    border-color: #da3633;
+}
+
+.user.background {
+    opacity: .55;
+}
+
+.user-top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.user-status {
+    margin-top: 5px;
+
+    color: #8b949e;
+
+    font-size: 12px;
+}
+
+.mod-badge {
+    padding: 3px 6px;
+
+    background: #9e6a03;
+
+    border-radius: 5px;
+}
+
+.room-info {
+    margin-top: 15px;
+
+    padding: 11px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+
+/* LOGS */
+
+.logs {
+    margin: 0 10px 10px;
+
+    padding: 14px;
+
+    background: #161b22;
+
+    border:
+        1px solid #30363d;
+
+    border-radius: 14px;
+}
+
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.logs-header h2 {
+    margin: 0;
+}
+
+.ride-log {
+    margin-top: 8px;
+
+    padding: 10px;
+
+    background: #0d1117;
+
+    border-radius: 8px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 1050px) {
+
+    .topbar {
+        grid-template-columns:
+            1fr;
+
+        align-items: stretch;
+    }
+
+    .top-speaking {
+        width: 100%;
+    }
+
+    .dashboard {
+        grid-template-columns:
+            1fr;
+    }
+
+    .panel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .ride-box {
+        flex-wrap: wrap;
+    }
+
+    .navigation-search,
+    .navigation-buttons,
+    .music-room-create,
+    .youtube-input {
+        grid-template-columns:
+            1fr;
+    }
+
+    #map {
+        height: 390px;
+    }
+}
